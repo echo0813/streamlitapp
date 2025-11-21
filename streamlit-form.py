@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, time
 
+# 允许跨域访问（关键！否则 React 无法嵌入）
+st.set_page_config(page_title="Streamlit 嵌入表单示例", layout="wide")
+
 # 设置页面标题
 st.title("Streamlit 完整表单示例")
 st.markdown("这个表单包含了 Streamlit 支持的所有组件类型")
@@ -104,4 +107,5 @@ with st.sidebar:
     sidebar_button = st.button("侧边栏按钮")
 
     if sidebar_button:
+
         st.write("侧边栏按钮被点击！")
