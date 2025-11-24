@@ -1,12 +1,16 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import plotly.express as px
 from datetime import datetime, time
+from streamlit_echarts import st_echarts
 
 # 允许跨域访问（关键！否则 React 无法嵌入）
-st.set_page_config(page_title="Streamlit 嵌入表单示例", layout="wide")
+st.set_page_config(page_title="Streamlit 示例", layout="wide")
 
 # 设置页面标题
-st.title("Streamlit 完整表单示例")
+st.title("Streamlit表单组件")
 st.markdown("这个表单包含了 Streamlit 支持的所有组件类型")
 
 # 创建表单
@@ -31,9 +35,7 @@ with st.form("my_form"):
     st.subheader("4. 文件上传组件")
     file_uploader = st.file_uploader("文件上传", type=["csv", "txt", "xlsx"])
 
-    st.subheader("5. 媒体组件")
-    # 摄像头组件
-    camera_input = st.camera_input("拍照")
+
 
     st.subheader("6. 滑块组件")
     slider = st.slider("普通滑块", min_value=0, max_value=100, value=50)
@@ -43,14 +45,7 @@ with st.form("my_form"):
     st.subheader("7. 颜色选择器")
     color_picker = st.color_picker("颜色选择", value="#FF0000")
 
-    st.subheader("8. 数据展示组件（用于预览）")
-    # 创建一个简单的DataFrame用于展示
-    df = pd.DataFrame({
-        "姓名": ["张三", "李四", "王五"],
-        "年龄": [25, 30, 35],
-        "城市": ["北京", "上海", "广州"]
-    })
-    st.dataframe(df)
+
 
     # 表单提交按钮
     submitted = st.form_submit_button("提交表单")
@@ -99,6 +94,91 @@ with st.form("my_form"):
 
         st.info("所有组件的数据都已成功收集！")
 
+
+st.title("Streamlit展示组件")
+# --- 1. 表格 (DataFrames) ---
+st.header("1. 数据表格展示")
+
+# 创建示例数据
+data = {
+    '姓名': ['张三', '李四', '王五', '赵六'],
+    '年龄': [25, 30, 35, 28],
+    '城市': ['北京', '上海', '广州', '深圳'],
+    '工资': [15000, 20000, 18000, 16000]
+}
+df = pd.DataFrame(data)
+
+# 方法1: st.dataframe() - 交互式表格（推荐）
+st.subheader("交互式表格 (st.dataframe)")
+st.dataframe(df, use_container_width=True)
+
+# 方法2: st.table() - 静态表格
+st.subheader("静态表格 (st.table)")
+st.table(df)
+
+# 方法3: st.write() - 自动检测并展示
+st.subheader("自动检测 (st.write)")
+st.write("这是一个DataFrame:", df)
+
+# --- 2. 图表 (Charts/Plots) ---
+st.header("2. 图表展示")
+
+# 使用 Numpy 创建更丰富的示例数据
+np.random.seed(42)
+df_chart = pd.DataFrame({
+    '日期': pd.date_range(start='2023-01-01', periods=30),
+    '销量': np.random.randint(100, 500, size=30),
+    '利润': np.random.uniform(-50, 200, size=30).round(2),
+    '类别': np.random.choice(['A', 'B', 'C'], size=30)
+})
+
+# --- 2.1 Streamlit 原生图表 ---
+st.subheader("Streamlit 原生图表")
+col1, col2 = st.columns(2)
+with col1:
+    st.line_chart(df_chart, x='日期', y='销量', use_container_width=True)
+with col2:
+    st.area_chart(df_chart, x='日期', y='利润', color='#FF4B4B', use_container_width=True)
+st.bar_chart(df_chart, x='类别', y='销量', use_container_width=True)
+
+
+# --- 2.3 Plotly 图表 ---
+st.subheader("Plotly 图表 (高度交互)")
+fig_plotly = px.scatter(df_chart, x='销量', y='利润',
+                        color='类别', size='销量',
+                        hover_data=['日期'],
+                        title='销量 vs 利润 (Plotly)')
+st.plotly_chart(fig_plotly, use_container_width=True)
+
+# 再增加一个 Plotly 柱状图示例
+fig_bar = px.bar(df_chart, x='类别', y='利润',
+                 color='类别',
+                 title='各产品类别利润对比',
+                 barmode='group')
+st.plotly_chart(fig_bar, use_container_width=True)
+
+st.subheader("echarts图表")
+# 配置 ECharts 图表选项
+option = {
+    "title": {"text": "ECharts 示例: 柱状图"},
+    "xAxis": {
+        "type": "category",
+        "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    },
+    "yAxis": {"type": "value"},
+    "series": [
+        {
+            "data": [120, 200, 150, 80, 70, 110, 130],
+            "type": "bar",
+            "showBackground": True,
+            "backgroundStyle": {"color": "rgba(220, 220, 220, 0.8)"},
+        }
+    ],
+}
+
+# 显示图表
+st_echarts(options=option, height="400px")
+
 # 侧边栏示例
 with st.sidebar:
     st.subheader("侧边栏组件")
@@ -107,5 +187,4 @@ with st.sidebar:
     sidebar_button = st.button("侧边栏按钮")
 
     if sidebar_button:
-
         st.write("侧边栏按钮被点击！")
